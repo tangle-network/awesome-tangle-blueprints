@@ -1,3 +1,8 @@
+<div align="center">
+  <img src="https://raw.githubusercontent.com/tangle-network/tangle/main/assets/Tangle%20%20Banner.png" alt="Tangle Network Banner" width="100%" />
+</div>
+
+
 # Awesome Tangle Blueprints 🌟
 
 A comprehensive collection of Tangle Blueprints, examples, and resources for developing on the Tangle Network.
