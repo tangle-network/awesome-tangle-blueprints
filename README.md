@@ -2,10 +2,24 @@
   <img src="https://raw.githubusercontent.com/tangle-network/tangle/main/assets/Tangle%20%20Banner.png" alt="Tangle Network Banner" width="100%" />
 </div>
 
-
 # Awesome Tangle Blueprints 🌟
 
 A comprehensive collection of Tangle Blueprints, examples, and resources for developing on the Tangle Network.
+
+## Table of Contents
+- [Awesome Tangle Blueprints 🌟](#awesome-tangle-blueprints-)
+  - [Table of Contents](#table-of-contents)
+  - [What are Tangle Blueprints?](#what-are-tangle-blueprints)
+  - [Bridges](#bridges)
+  - [AI](#ai)
+  - [MPC](#mpc)
+  - [Distributed Validators](#distributed-validators)
+  - [Web Services](#web-services)
+  - [Rollups](#rollups)
+  - [Eigenlayer](#eigenlayer)
+  - [Symbiotic](#symbiotic)
+  - [Using Other Programming Languages](#using-other-programming-languages)
+  - [Contributing](#contributing)
 
 ## What are Tangle Blueprints?
 
