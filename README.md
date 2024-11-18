@@ -45,7 +45,3 @@ For comprehensive documentation and detailed guides, visit our [official documen
 ## Contributing
 
 We welcome contributions! To submit your own Tangle Blueprint or resource, please create a pull request following our contribution guidelines.
-
-## License
-
-This project is licensed under the MIT License. For full details, please see the [LICENSE](LICENSE) file.
