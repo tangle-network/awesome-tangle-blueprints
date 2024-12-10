@@ -28,7 +28,7 @@ Tangle Blueprints represent a standardized framework for creating reproducible i
 For comprehensive documentation and detailed guides, visit our [official documentation](https://docs.tangle.tools/developers/blueprints/introduction).
 
 ## Bridges
-- [LayerZero DVN Blueprint Template](https://github.com/tangle-network/layerzero-dvn-blueprint-template) - Template for creating LayerZero DVN (Decentralized Validator Network) blueprints
+- [LayerZero DVN Blueprint Template](https://github.com/tangle-network/layerzero-dvn-blueprint-template) - Template for creating LayerZero DVN (Decentralized Verifier Network) blueprints
 - [Hyperlane Relayer Blueprint](https://github.com/tangle-network/hyperlane-relayer-blueprint) - Blueprint for implementing Hyperlane relayer functionality
 - [Hyperlane ISM Blueprint Template](https://github.com/tangle-network/hyperlane-ism-blueprint-template) - Template for creating Hyperlane Interchain Security Module blueprints
 - [Hyperbridge Relayer Blueprint](https://github.com/tangle-network/hyperbridge-relayer-blueprint) - Blueprint for implementing Hyperbridge relayer functionality
