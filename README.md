@@ -39,6 +39,9 @@ For comprehensive documentation and detailed guides, visit our [official documen
 ## MPC
 - [FROST Blueprint](https://github.com/tangle-network/frost-blueprint) - Blueprint for implementing FROST (Flexible Round-Optimized Schnorr Threshold) signatures
 - [DFNS CGGMP21 Blueprint](https://github.com/tangle-network/dfns-cggmp21-blueprint) - Blueprint for implementing DFNS CGGMP21 distributed key generation
+- [Schnorr Musig2](https://github.com/tangle-network/schnorr-musig2-blueprint) - Blueprint for Musig2 Schnorr signatures over Secp256k1
+- [Threshold BLS](https://github.com/tangle-network/bls-blueprint) - Blueprint for threshold BLS signatures using BLS381
+- [Silent Timelock Encryption](https://github.com/tangle-network/silent-timelock-encryption-blueprint) - Blueprint for silent setup timelock encryption. Useful for random beacon and threshold decryption systems.
 
 ## Distributed Validators
 - [Obol DVT Blueprint](https://github.com/tangle-network/obol-dvt-blueprint) - Blueprint for implementing Obol Distributed Validator Technology
