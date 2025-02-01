@@ -42,11 +42,13 @@ For comprehensive documentation and detailed guides, visit our [official documen
 - [Schnorr Musig2](https://github.com/tangle-network/schnorr-musig2-blueprint) - Blueprint for Musig2 Schnorr signatures over Secp256k1
 - [Threshold BLS](https://github.com/tangle-network/bls-blueprint) - Blueprint for threshold BLS signatures using BLS381
 - [Silent Timelock Encryption](https://github.com/tangle-network/silent-timelock-encryption-blueprint) - Blueprint for silent setup timelock encryptions and threshold decryptions.
+- [Batch Threshold Decryption](https://github.com/tangle-network/bte-blueprint) - Blueprint for batch threshold decryption, includes examples for MEV-resistent orderflow. 
 
 ## Distributed Validators
 - [Obol DVT Blueprint](https://github.com/tangle-network/obol-dvt-blueprint) - Blueprint for implementing Obol Distributed Validator Technology
 
 ## Web Services
+- [Account Abstraction / transaction relayer](https://github.com/tangle-network/txrelayer-blueprint) - Blueprint for feeless transaction relayers to support any EVM.
 - [TLS Notary Blueprint](https://github.com/tangle-network/tls-notary-blueprint) - Blueprint for implementing TLS notary services
 - [Apillon Simplet Blueprint Template](https://github.com/tangle-network/apillon-simplet-blueprint-template) - Template for creating Apillon Simplet web services
 
