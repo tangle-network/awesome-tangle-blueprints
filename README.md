@@ -34,6 +34,7 @@ For comprehensive documentation and detailed guides, visit our [official documen
 - [Hyperbridge Relayer Blueprint](https://github.com/tangle-network/hyperbridge-relayer-blueprint) - Blueprint for implementing Hyperbridge relayer functionality
 
 ## AI
+- [Rig AI Agent w/ Github spell-check/contribution actions](https://github.com/tangle-network/rig-ai-agent-blueprint) - A template showcasing Rig AI agent integration with Tangle Blueprints, which contains an example agent for spell checking and improving code documentation of requested repos.
 - [Gaia AI Agent Template](https://github.com/tangle-network/gaia-ai-agent-template) - Template for creating AI agents using the Gaia framework
 - [Discord AI Summary Agent](https://github.com/tangle-network/discord-summarizer-rig-blueprint/) - Template for creating AI agents that summarizes discord channels daily
 
