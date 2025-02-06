@@ -35,6 +35,7 @@ For comprehensive documentation and detailed guides, visit our [official documen
 
 ## AI
 - [Gaia AI Agent Template](https://github.com/tangle-network/gaia-ai-agent-template) - Template for creating AI agents using the Gaia framework
+- [Discord AI Summary Agent](https://github.com/tangle-network/discord-summarizer-rig-blueprint/) - Template for creating AI agents that summarizes discord channels daily
 
 ## MPC
 - [FROST Blueprint](https://github.com/tangle-network/frost-blueprint) - Blueprint for implementing FROST (Flexible Round-Optimized Schnorr Threshold) signatures
@@ -48,6 +49,7 @@ For comprehensive documentation and detailed guides, visit our [official documen
 - [Obol DVT Blueprint](https://github.com/tangle-network/obol-dvt-blueprint) - Blueprint for implementing Obol Distributed Validator Technology
 
 ## Web Services
+- [Secure code execution as a service (Lambdas)](https://github.com/tangle-network/secure-code-execution-blueprint) - A template for code execution service supporting Rust, Golang, Python, JS/TS
 - [Account Abstraction / transaction relayer](https://github.com/tangle-network/txrelayer-blueprint) - Blueprint for feeless transaction relayers to support any EVM.
 - [TLS Notary Blueprint](https://github.com/tangle-network/tls-notary-blueprint) - Blueprint for implementing TLS notary services
 - [Apillon Simplet Blueprint Template](https://github.com/tangle-network/apillon-simplet-blueprint-template) - Template for creating Apillon Simplet web services
