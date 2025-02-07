@@ -38,6 +38,9 @@ For comprehensive documentation and detailed guides, visit our [official documen
 - [Gaia AI Agent Template](https://github.com/tangle-network/gaia-ai-agent-template) - Template for creating AI agents using the Gaia framework
 - [Discord AI Summary Agent](https://github.com/tangle-network/discord-summarizer-rig-blueprint/) - Template for creating AI agents that summarizes discord channels daily
 
+## Key Management
+- [Turnkey API Blueprint](https://github.com/tangle-network/turnkey-blueprint-template) - A template that contains Turnkey APIs for interacting with Turnkey for use in a Tangle blueprint.
+
 ## MPC
 - [FROST Blueprint](https://github.com/tangle-network/frost-blueprint) - Blueprint for implementing FROST (Flexible Round-Optimized Schnorr Threshold) signatures
 - [DFNS CGGMP21 Blueprint](https://github.com/tangle-network/dfns-cggmp21-blueprint) - Blueprint for implementing DFNS CGGMP21 distributed key generation
