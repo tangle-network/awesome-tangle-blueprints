@@ -59,6 +59,7 @@ For comprehensive documentation and detailed guides, visit our [official documen
 - [Apillon Simplet Blueprint Template](https://github.com/tangle-network/apillon-simplet-blueprint-template) - Template for creating Apillon Simplet web services
 
 ## Rollups
+- [Espresso RaaS](https://github.com/tangle-network/espresso-raas-blueprint/) - Espresso RaaS w/ Arbitrum Orbit stack
 - [Avail Arbitrum Orbit RaaS](https://github.com/tangle-network/avail-arbitrum-orbit-raas) - Rollup-as-a-Service implementation for Arbitrum Orbit using Avail DA
 - [RaaS Blueprints](https://github.com/tangle-network/raas-blueprints) - Collection of Rollup-as-a-Service blueprints
 
