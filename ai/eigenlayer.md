@@ -154,9 +154,3 @@ let stream = provider.watch_logs(&filter).await?.into_stream();
 - Avoid re-implementing BLS or crypto logic—use the SDK-provided abstractions.
 
 ---
-
-## 9. Examples Index
-- [`xsquare_eigen`](#): Compute square of a task input and submit signed result.
-- [`initialize_bls_task`](#): Registers task for aggregation.
-- [Full e2e test](#): Uses `anvil`, `Mailbox.sol`, and `TestRecipient` contracts to simulate end-to-end flow.
-
