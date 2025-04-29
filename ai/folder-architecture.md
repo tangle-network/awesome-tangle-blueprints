@@ -32,7 +32,13 @@ Every Blueprint must follow this layout exactly at the root level:
 └── README.md
 ```
 
-> 🔒 **File placement is enforced. AI must not create Rust logic outside the `-lib/` crate. `main.rs` only initializes the runner.**
+> **Note:** Two naming conventions are supported:
+> 1. Template-based: `{{name}}-bin/` and `{{name}}-lib/` (when using `cargo tangle blueprint create`)
+> 2. Fixed naming: `bin/` and `blueprint/` (for some existing projects)
+>
+> Use whichever convention is already established in the project you're working with.
+
+> 🔒 **File placement is enforced. AI must not create Rust logic outside the library crate. The binary crate only initializes the runner.**
 
 ---
 
@@ -116,8 +122,9 @@ This ensures:
 
 ### 9. 🧠 AI Enforcement Rules
 
-- ✅ MUST place `BlueprintRunner` setup in `main.rs`.
-- ✅ MUST create one module per job in `-lib/src/jobs/`.
-- ✅ MUST define a `Context` struct in `-lib/src/context.rs`.
+- ✅ MUST place `BlueprintRunner` setup in the binary crate's `main.rs`.
+- ✅ MUST create one module per job in the library crate's `src/jobs/`.
+- ✅ MUST define a `Context` struct in the library crate's `src/context.rs`.
 - ✅ MUST keep smart contract code isolated in `/contracts`.
-- ❌ MUST NOT place any Blueprint logic in the `-bin` crate besides initialization.
+- ❌ MUST NOT place any Blueprint logic in the binary crate besides initialization.
+- ❌ MUST NOT rely on the binary crate for job handlers, context definitions, or other application logic.
