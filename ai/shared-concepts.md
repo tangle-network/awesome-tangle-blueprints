@@ -47,13 +47,11 @@ Router::new()
 
 ---
 
-## 3. Context Pattern
-All contexts must:
-- Wrap `BlueprintEnvironment` with `#[config]`
-- Derive traits like `TangleClientContext`, `ServicesContext`, `KeystoreContext` as needed
-- Optionally contain internal clients (Docker, RPC, gRPC, etc.)
+## 3. Context Pattern & State Management
 
-Example:
+### Structure & Definition
+The Context struct is the primary container for application state and shared clients:
+
 ```rust
 #[derive(Clone, TangleClientContext, ServicesContext)]
 pub struct MyContext {
@@ -65,12 +63,65 @@ pub struct MyContext {
 }
 ```
 
-Construction should be async:
+**Required Fields:**
+- `#[config] pub env: BlueprintEnvironment` - Provides access to configuration, keystore, data directories - this is always required
+- Other fields should contain the shared clients and state needed by job handlers - they will differ per Blueprint
+
+**Required Traits:**
+- `#[derive(Clone)]` - Contexts must be cloneable for job handlers - this is always required
+- Chain-specific traits as needed:
+  - `TangleClientContext` - For Tangle chain interactions - this should always be used for Tangle Blueprints
+  - `ServicesContext` - For service registry access - this should always be used for all Blueprints
+  - `KeystoreContext` - For direct keystore access - this should always be used for all Blueprints
+
+### Initialization & Usage
+Initialization must be async and handle errors appropriately:
+
 ```rust
 impl MyContext {
-    pub async fn new(env: BlueprintEnvironment) -> Result<Self> { ... }
+    pub async fn new(env: BlueprintEnvironment) -> Result<Self> {
+        // Initialize data directory
+        let data_dir = env.data_dir.clone().unwrap_or_else(default_data_dir);
+        
+        // Set up shared clients
+        let docker = Arc::new(DockerBuilder::new().await?.client());
+        
+        // Set up signer if needed
+        let key = env.keystore().first_local::<SpEcdsa>()?;
+        let secret = env.keystore().get_secret::<SpEcdsa>(&key)?;
+        let signer = TanglePairSigner::new(secret.0);
+        
+        Ok(Self { env, data_dir, docker, signer })
+    }
 }
 ```
+
+Job handlers access the context via the extractor pattern:
+
+```rust
+pub async fn my_handler(
+    Context(ctx): Context<MyContext>,
+    TangleArg(data): TangleArg<String>,
+) -> Result<TangleResult<u64>> {
+    // Access environment config, keystore, clients, etc.
+    let config = &ctx.env.config;
+    let client = ctx.env.tangle_client().await?;
+    
+    // Use shared clients
+    let container = ctx.docker.create_container("image:tag", ...).await?;
+    
+    // Return result
+    Ok(TangleResult::new(42))
+}
+```
+
+### State Management Best Practices
+- Use Context for sharing clients and long-lived state across handlers
+- For service-specific persistent state, prefer:
+  - Files in service-specific directories: `ctx.data_dir.join("service_id")`
+  - Database storage keyed by service ID
+- Avoid storing highly dynamic, per-job state directly in Context
+- Wrap shared clients in `Arc` for thread-safe access
 
 ---
 
@@ -94,23 +145,44 @@ Your producer and consumer determine event ingestion and message submission:
 ---
 
 ## 5. Job Signature Conventions
-Use extractors to simplify job argument handling:
 
-- `TangleArg<T>`: one field
-- `TangleArgs2<A, B>`: two fields
-- `BlockEvents`: EVM logs
-- `Context<MyContext>`: context injection
-
-Return `TangleResult<T>` or `Result<(), Error>` depending on job type.
+### Handler Pattern
+Job handlers use extractors for context and argument handling:
 
 ```rust
-pub async fn handler(
+#[debug_job]  // Automatic entry/exit logging
+pub async fn handler_name(
     Context(ctx): Context<MyContext>,
     TangleArg(data): TangleArg<String>,
-) -> Result<TangleResult<u64>> {
-    ...
+    // Other extractors as needed
+) -> Result<TangleResult<U>, Error> {
+    // Implementation
 }
 ```
+
+**Key Components:**
+- **Extractors:** Use these to handle inputs automatically:
+  - `Context<MyContext>`: Injects the context
+  - `TangleArg<T>`: Single field argument
+  - `TangleArgs2<A, B>`, `TangleArgs3<A, B, C>`: Multiple fields
+  - `Optional<T>`: For optional arguments
+  - `List<T>`: For array/list arguments
+  - `BlockEvents`: For extracting EVM logs
+
+- **Return Types:**
+  - `Result<TangleResult<T>, Error>`: For jobs submitting results to Tangle
+  - `Result<(), Error>`: For jobs with no chain result
+
+- **Filtering:** Apply appropriate layers to filter job execution:
+  - `TangleLayer`: Standard Tangle job call filtering
+  - `FilterLayer::new(MatchesServiceId(...))`: For multi-tenant filtering
+  - `FilterLayer::new(MatchesContract(...))`: For EVM contract filtering
+
+### Job Organization
+- Define Job IDs as constants: `pub const MY_JOB_ID: u64 = 0;`
+- Use `snake_case` for handler names, with suffixes indicating purpose (e.g., `handle_request_tangle`)
+- Group related jobs in modules under `jobs/` directory
+- Use the `#[debug_job]` macro for automatic logging of entry/exit
 
 ---
 
@@ -197,3 +269,59 @@ pub async fn handler_name(
 - **MUST** use Blueprint SDK patterns for runner, router, jobs, and context
 - **MUST NOT** use `TangleConsumer`/`TangleProducer` outside Tangle-specific blueprints
 - **MUST** handle errors gracefully using `Result`
+
+---
+
+## 11. Blueprint Enforcement Rules
+
+This section consolidates all enforcement rules across Blueprint development domains.
+
+### Project Structure
+- **MUST** follow the required directory and file structure
+- **MUST** place `BlueprintRunner` setup in the binary crate's `main.rs`
+- **MUST** keep all application logic in the library crate
+- **MUST** create one module per job in the library crate's `src/jobs/`
+- **MUST** define a `Context` struct in the library crate's `src/context.rs`
+- **MUST** keep smart contract code isolated in `/contracts`
+- **MUST NOT** place logic in the binary crate besides initialization
+
+### Context and State Management
+- **MUST** include `#[config] pub env: BlueprintEnvironment` in Context
+- **MUST** derive `Clone` and necessary SDK context traits
+- **MUST** implement an `async fn new(...) -> Result<Self>` constructor
+- **MUST** initialize shared clients within the `new` function
+- **MUST** access context in handlers via the `Context<MyContext>` extractor
+
+### Job Handlers
+- **MUST** use `TangleArg`/`TangleArgsN` extractors for job inputs
+- **MUST** apply `TangleLayer` or other appropriate filters to job handlers
+- **MUST** return `TangleResult<T>` for jobs that need to report results
+- **MUST** handle errors gracefully using `Result`
+- **MUST NOT** manually decode block data; rely on extractors
+
+### Producer/Consumer
+- **MUST** use `TangleProducer` and `TangleConsumer` for Tangle interaction
+- **MUST** use `TanglePairSigner` initialized from the environment keystore
+- **MUST NOT** use `TangleConsumer`, `TangleProducer` outside Tangle-specific blueprints
+- **MUST** match Producer/Consumer to event source and target chain
+
+### Docker/Docktopus Integration
+- **MUST** use the fluent builder pattern for container creation
+- **MUST** follow the correct container lifecycle
+- **MUST** integrate container management within the Blueprint `Context`
+- **MUST** share the `Arc<Docker>` client
+- **MUST** explicitly define necessary configurations
+- **MUST NOT** rely on implicit Docker defaults
+- **MUST NOT** ignore errors from `docktopus` operations
+
+### Testing
+- **MUST** include integration tests for all job handlers
+- **MUST** use `TangleTestHarness` for Tangle Blueprints
+- **MUST** follow the setup → register → execute → verify pattern
+- **MUST** clean up resources created during tests
+- **MUST** verify both job results and any significant side effects
+
+### Error Handling
+- **MUST** propagate errors using `Result<T, E>` and `?` operator
+- **MUST NOT** use `unwrap()` or `expect()` in production code
+- **SHOULD** define custom error types implementing appropriate traits

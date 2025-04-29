@@ -45,9 +45,10 @@ async fn main() -> Result<(), sdk::Error> {
 ---
 
 ## 3. Job Composition
-### Handler Signature
-Handlers take a context and deserialized args:
 
+> For comprehensive job handler patterns, see the [Job Signature Conventions](shared-concepts.md#5-job-signature-conventions) section in shared-concepts.md.
+
+### Tangle-Specific Signature Example
 ```rust
 pub async fn set_config(
     Context(ctx): Context<MyContext>,
@@ -56,16 +57,23 @@ pub async fn set_config(
         String,
     >,
 ) -> Result<TangleResult<u64>> {
+    // Implementation
+}
 ```
 
-Use `TangleArg`, `TangleArgs2`, etc. for parsing input fields. Always return `TangleResult<T>`.
-
-### Event Filters
-Apply `TangleLayer` or `MatchesServiceId` to jobs to filter execution by service identity.
+### Tangle Event Filters
+Use these filters for Tangle job routing:
+- `TangleLayer`: Standard filter for all Tangle jobs
+- `FilterLayer::new(MatchesServiceId(...))`: For service-specific filtering
 
 ---
 
 ## 4. Context Composition
+
+> For comprehensive context management details, see the [Context Pattern & State Management](shared-concepts.md#3-context-pattern--state-management) section in shared-concepts.md.
+
+The Tangle Blueprint context should derive the necessary Tangle-specific traits:
+
 ```rust
 #[derive(Clone, TangleClientContext, ServicesContext)]
 pub struct MyContext {
@@ -84,11 +92,6 @@ impl MyContext {
 }
 ```
 
-Contexts should:
-- Derive required traits for routing.
-- Contain DockerBuilder or other service-level state if needed.
-- Wrap fs, keystore, or networking state.
-
 ---
 
 ## 5. Job Naming & IDs
@@ -100,22 +103,23 @@ Contexts should:
 ---
 
 ## 6. Testing Blueprints
-Use `TangleTestHarness` to simulate a full node and runtime:
 
+Blueprint tests should use `TangleTestHarness` to simulate a full node and runtime. For comprehensive testing requirements and examples, see [testing-requirements.md](testing-requirements.md).
+
+Core testing pattern:
 ```rust
+// Set up test environment
 let harness = TangleTestHarness::setup(temp_dir).await?;
 let (mut test_env, service_id, _) = harness.setup_services::<1>(false).await?;
 test_env.initialize().await?;
 test_env.add_job(square.layer(TangleLayer)).await;
 test_env.start(()).await?;
 
+// Execute and verify job
 let call = harness.submit_job(service_id, 0, vec![InputValue::Uint64(5)]).await?;
 let result = harness.wait_for_job_execution(service_id, call).await?;
-
 harness.verify_job(&result, vec![OutputValue::Uint64(25)]);
 ```
-
-Testing is composable, isolated, and persistent with `tempfile::TempDir`.
 
 ---
 

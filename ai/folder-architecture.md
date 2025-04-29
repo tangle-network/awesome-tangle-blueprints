@@ -87,12 +87,11 @@ Every Blueprint must follow this layout exactly at the root level:
 
 ### 6. 🧪 Testing Requirements
 
-- All jobs must include at least one integration test using `TangleTestHarness`.
-- Tests must live in `{{name}}-lib/tests/` or `{{name}}-lib/src/jobs/tests.rs`.
-- Tests must:
-  - Initialize a test harness.
-  - Register the job.
-  - Submit inputs and validate results.
+All Blueprint projects must include appropriate tests:
+
+- Tests must be located in `{{name}}-lib/tests/` or `{{name}}-lib/src/jobs/tests.rs`
+- Each job handler must have at least one integration test
+- See [testing-requirements.md](testing-requirements.md) for comprehensive testing standards and examples
 
 ---
 

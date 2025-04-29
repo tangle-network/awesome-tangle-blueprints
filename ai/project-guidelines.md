@@ -24,28 +24,29 @@ The primary goal is to create a Tangle Blueprint service that manages an MCP (Mu
 
 ## 2. Key Architectural Concepts
 
+> **Note:** For detailed folder structure requirements, see [folder-architecture.md](folder-architecture.md)
+
 ### Modularity
-- Follow the strict separation between `bin` and `lib` crates
-- Keep all business logic within the `blueprint` library crate
-- Use modules to organize related functionality
+- Blueprint services follow a strict separation between binary and library crates
+- Binary crate handles only initialization of the runner
+- Library crate contains all business logic, jobs, context, and utilities
+- Code is organized into logical modules (jobs, context, utils, etc.)
 
 ### Microservice Pattern
-- Treat the Blueprint as a self-contained service triggered by on-chain events (jobs)
-- Each job should have a clear, focused responsibility
-- Service state should be properly isolated and managed
+- Each Blueprint is a self-contained service triggered by on-chain events (jobs)
+- Each job has a clear, focused responsibility
+- Service state is properly isolated and managed via the Context
 
 ### Producer/Consumer Flow
 ```
-TangleProducer → Router → Job Handlers → TangleConsumer
-  (Events)      (Routes)    (Docker)      (Results)
+Producer → Router → Job Handlers → Consumer
+(Events)   (Routes)  (Logic)      (Results)
 ```
 
 ### State Management
-- Use the `Context` struct for shared state and clients
-- Persist service-specific state (container IDs, configuration) in:
-  - Files within the `data_dir`
-  - Database entries keyed by service ID
-- Avoid storing highly dynamic, per-job state directly in the main `Context`
+- Context struct manages shared state and clients 
+- Service-specific state is persisted in data_dir or database
+- Dynamic, per-job state should not be stored in main Context
 
 ---
 
