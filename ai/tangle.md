@@ -131,3 +131,21 @@ Testing is composable, isolated, and persistent with `tempfile::TempDir`.
 - Avoid naming collisions for Job IDs.
 
 ---
+
+## 8. Key Concepts & Enforcement Rules
+
+### Key Tangle Concepts
+- **Producer:** `TangleProducer` reads finalized blocks from the Tangle RPC
+- **Consumer:** `TangleConsumer` takes `TangleResult` outputs and submits them as signed extrinsics
+- **`TangleLayer`:** Filters incoming job requests based on standard Tangle job call conventions
+- **Extractors:** Automatically deserialize job input arguments from Tangle extrinsic data
+
+### Enforcement Rules
+- **MUST** use `TangleProducer` and `TangleConsumer` for standard Tangle interaction
+- **MUST** use `TanglePairSigner` initialized from the environment keystore
+- **MUST** apply `TangleLayer` or other appropriate filters to job handlers
+- **MUST** use `TangleArg`/`TangleArgsN` extractors for job inputs
+- **MUST** return `TangleResult<T>` for jobs that need to report results back to the chain
+- **DO NOT** manually decode block data; rely on the producer and extractors
+
+---
