@@ -158,3 +158,42 @@ For Eigenlayer:
 ## 9. Don'ts
 ❌ Never use a `TangleConsumer`, `TangleProducer` outside of a Tangle specific blueprint.
 
+
+---
+
+## 10. Rust Coding Standards
+
+### Error Handling
+- Propagate errors using `Result<T, E>` and `?` operator
+- Avoid `unwrap()` or `expect()` in production code
+- Define custom error types implementing `std::error::Error` and `From` traits:
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum MyError {
+    #[error("Failed to process: {0}")]
+    ProcessingError(String),
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] DatabaseError),
+}
+```
+
+### Job Handler Best Practices
+```rust
+#[debug_job]  // Automatic entry/exit logging - only needed for debugging
+pub async fn handler_name(
+    Context(ctx): Context<MyContext>,
+    TangleArg(data): TangleArg<String>,
+) -> Result<TangleResult<U>, Error> {
+    // Implementation
+}
+```
+
+### Code Organization
+- Group related code in logical modules (`jobs/`, `context/`, `utils/`, `docker/`)
+- Structure job modules by functionality (`jobs/mod.rs`, `jobs/create_project.rs`)
+- Use `pub mod module_name;` in `lib.rs` to expose functionality
+
+### Strict Rules
+- **MUST** use Blueprint SDK patterns for runner, router, jobs, and context
+- **MUST NOT** use `TangleConsumer`/`TangleProducer` outside Tangle-specific blueprints
+- **MUST** handle errors gracefully using `Result`
