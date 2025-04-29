@@ -20,7 +20,7 @@ let mut cron = CronJob::new(MY_JOB_ID, "*/5 * * * * *").await?;
 
 ## 2. Cron Schedule Format
 
-✅ Format: `sec min hour day month day-of-week`
+Format: `sec min hour day month day-of-week`
 - Example: `"*/10 * * * * *"` → every 10 seconds
 
 Note: Seconds **must be included** in Blueprint's cron parser.
@@ -87,11 +87,11 @@ assert!(after.duration_since(before) >= Duration::from_secs(2));
 
 ## 8. Best Practices
 
-✅ Use cron when:
+Use cron when:
 - Jobs need to run at regular intervals
 - Input args are static or unnecessary
 
-❌ Don’t use cron when:
+Don’t use cron when:
 - Input parameters are dynamic or user-driven
 - You expect reactive behavior (use Tangle or EVM events instead)
 
