@@ -308,6 +308,7 @@ pub async fn handler_name(
 - **MUST NOT** use `TangleConsumer`/`TangleProducer` outside Tangle-specific blueprints
 - **MUST NOT** use `TangleArg`/`TangleArgsN` extractors outside Tangle blueprints
 - **MUST NOT** use `EVMConsumer`/`PollingProducer` outside EVM-specific blueprints
+- **MUST NOT** use `BlockEvents` / `ContractAddress` / `BlockEvents` /`Tx` extractors outside EVM blueprints
 - **MUST** handle errors gracefully using `Result`
 
 ---
@@ -349,5 +350,5 @@ This section consolidates all enforcement rules across Blueprint development dom
 
 ### Error Handling
 - **MUST** propagate errors using `Result<T, E>` and `?` operator
-- **MUST NOT** use `unwrap()` or `expect()` in production code
+- **SHOULD NOT** use `unwrap()` or `expect()` in production code
 - **SHOULD** define custom error types implementing appropriate traits
