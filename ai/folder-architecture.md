@@ -12,7 +12,6 @@ Every Blueprint must follow this layout exactly at the root level:
 .
 ├── .cargo/
 ├── .github/
-├── app/                       # Front-end app monorepo or impl
 ├── contracts/                 # Solidity contracts used for job triggers or verification
 ├── {{name}}-bin/              # Binary crate, entry point for blueprint execution
 │   └── src/
@@ -25,7 +24,7 @@ Every Blueprint must follow this layout exactly at the root level:
 ├── .envrc
 ├── .gitignore
 ├── Cargo.lock
-├── Cargo.toml.liquid          # Liquid template used by `cargo tangle`
+├── Cargo.toml
 ├── Dockerfile                 # Optional runtime container setup
 ├── LICENSE-APACHE
 ├── LICENSE-MIT

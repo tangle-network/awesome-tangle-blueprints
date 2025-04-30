@@ -3,15 +3,13 @@
 ## 1. What is a Tangle Blueprint?
 A Tangle Blueprint is a modular, job-executing service built on top of Substrate (Tangle) using the Blueprint SDK. It is structured similarly to a microservice with:
 
-- **Job Router**: Maps numeric job IDs to logic handlers.
-- **BlueprintRunner**: Core executor that ties together producer, consumer, router, and context.
-- **TangleProducer**: Streams finalized blocks/events from a Tangle RPC endpoint.
-- **TangleConsumer**: Signs and sends results back to the chain.
-- **Context**: Manages local state (e.g., data directory, docker containers, keystore).
+- **Job Router**: Maps numeric job IDs to logic handlers
+- **BlueprintRunner**: Core executor that ties together producer, consumer, router, and context
+- **TangleProducer**: Streams finalized blocks/events from a Tangle RPC endpoint
+- **TangleConsumer**: Signs and sends results back to the chain
+- **Context**: Manages local state (data directory, docker containers, keystore)
 
-These services are composable and deterministic, often containerized (e.g. Docker) and can be tested using the built-in `TangleTestHarness`.
-
----
+These services are composable and deterministic, often containerized (e.g., Docker) and can be tested using the built-in `TangleTestHarness`.
 
 ## 2. Project Skeleton
 The canonical `main.rs` structure looks like:
@@ -42,13 +40,10 @@ async fn main() -> Result<(), sdk::Error> {
 }
 ```
 
----
-
 ## 3. Job Composition
+### Handler Signature
+Handlers take a context and deserialized args:
 
-> For comprehensive job handler patterns, see the [Job Signature Conventions](shared-concepts.md#5-job-signature-conventions) section in shared-concepts.md.
-
-### Tangle-Specific Signature Example
 ```rust
 pub async fn set_config(
     Context(ctx): Context<MyContext>,
@@ -61,21 +56,17 @@ pub async fn set_config(
 }
 ```
 
-### Tangle Event Filters
-Use these filters for Tangle job routing:
-- `TangleLayer`: Standard filter for all Tangle jobs
-- `FilterLayer::new(MatchesServiceId(...))`: For service-specific filtering
+Use `TangleArg`, `TangleArgs2`, etc. for parsing input fields. Always return `TangleResult<T>`.
 
----
+### Event Filters
+Apply `TangleLayer` or `MatchesServiceId` to jobs to filter execution by service identity.
 
 ## 4. Context Composition
 
-> For comprehensive context management details, see the [Context Pattern & State Management](shared-concepts.md#3-context-pattern--state-management) section in shared-concepts.md.
-
-The Tangle Blueprint context should derive the necessary Tangle-specific traits:
+The context needs to include the BlueprintEnvironment as seen below. Any other components should be added as needed per blueprint.
 
 ```rust
-#[derive(Clone, TangleClientContext, ServicesContext)]
+#[derive(Clone, TangleClientContext, ServicesContext, KeystoreContext)]
 pub struct MyContext {
     #[config]
     pub env: BlueprintEnvironment,
@@ -92,64 +83,43 @@ impl MyContext {
 }
 ```
 
----
+Contexts should:
+- Derive required traits for routing
+- Contain DockerBuilder or other service-level state if needed
+- Wrap fs, keystore, or networking state
 
 ## 5. Job Naming & IDs
 - Job IDs: `pub const MY_JOB_ID: u64 = 0;`
 - Handler naming: `snake_case_action_target` (e.g., `spawn_indexer_local`)
-- Files: Group jobs in a `jobs` module, one file per logical task.
-- Use `#[debug_job]` macro for helpful traces.
-
----
+- Files: Group jobs in a `jobs` module, one file per logical task
+- Use `#[debug_job]` macro for helpful traces
 
 ## 6. Testing Blueprints
+Use `TangleTestHarness` to simulate a full node and runtime:
 
-Blueprint tests should use `TangleTestHarness` to simulate a full node and runtime. For comprehensive testing requirements and examples, see [testing-requirements.md](testing-requirements.md).
-
-Core testing pattern:
 ```rust
-// Set up test environment
 let harness = TangleTestHarness::setup(temp_dir).await?;
 let (mut test_env, service_id, _) = harness.setup_services::<1>(false).await?;
 test_env.initialize().await?;
 test_env.add_job(square.layer(TangleLayer)).await;
 test_env.start(()).await?;
 
-// Execute and verify job
 let call = harness.submit_job(service_id, 0, vec![InputValue::Uint64(5)]).await?;
 let result = harness.wait_for_job_execution(service_id, call).await?;
+
 harness.verify_job(&result, vec![OutputValue::Uint64(25)]);
 ```
 
----
+Testing is composable, isolated, and persistent with `tempfile::TempDir`.
 
-## 7. Do's and Don'ts
-✅ DO:
-- Use `BlueprintEnvironment` for config.
-- Derive all routing context traits.
-- Use `TangleLayer` for filtering.
-- Store persistent data under `data_dir` from env or use a database.
-
-❌ DON'T:
-- Never manually fetch or decode block data. Use `TangleArg` extractors.
-- Avoid naming collisions for Job IDs.
-
----
-
-## 8. Key Concepts & Enforcement Rules
-
-### Key Tangle Concepts
-- **Producer:** `TangleProducer` reads finalized blocks from the Tangle RPC
-- **Consumer:** `TangleConsumer` takes `TangleResult` outputs and submits them as signed extrinsics
-- **`TangleLayer`:** Filters incoming job requests based on standard Tangle job call conventions
-- **Extractors:** Automatically deserialize job input arguments from Tangle extrinsic data
-
-### Enforcement Rules
-- **MUST** use `TangleProducer` and `TangleConsumer` for standard Tangle interaction
-- **MUST** use `TanglePairSigner` initialized from the environment keystore
-- **MUST** apply `TangleLayer` or other appropriate filters to job handlers
-- **MUST** use `TangleArg`/`TangleArgsN` extractors for job inputs
-- **MUST** return `TangleResult<T>` for jobs that need to report results back to the chain
-- **DO NOT** manually decode block data; rely on the producer and extractors
-
----
+## 7. Key Implementation Rules
+- MUST use `TangleProducer` and `TangleConsumer` for Tangle interaction
+- MUST use `TanglePairSigner` initialized from the environment keystore
+- MUST apply `TangleLayer` or other appropriate filters to job handlers
+- MUST use `TangleArg`/`TangleArgsN` extractors for job inputs
+- MUST return `TangleResult<T>` for jobs that report results back to the chain
+- DO NOT manually decode block data; rely on extractors
+- MUST handle errors gracefully using `Result`
+- DO NOT use `unwrap()` or `expect()` in production code
+- MUST store persistent data under `data_dir` from env
+- MUST derive `KeystoreContext` and other required context traits

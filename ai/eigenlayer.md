@@ -1,15 +1,14 @@
 # Cursor Rules: Eigenlayer Blueprint Guide
 
 ## 1. What is an Eigenlayer Blueprint?
-Eigenlayer Blueprints are services built on top of EVM-compatible chains using Alloy for contract interaction and log parsing. They run offchain logic in response to onchain events and submit responses back via APIs, BLS aggregators, or onchain transactions.
+Eigenlayer Blueprints are services built on top of EVM-compatible chains using Alloy for contract interaction and log parsing. They run offchain logic in response to onchain events and submit responses via APIs, BLS aggregators, or onchain transactions.
 
 Key components:
-- **PollingProducer**: Streams logs using `eth_getLogs` from an EVM endpoint.
-- **Alloy**: Re-exported via `blueprint_sdk::alloy` for decoding events, sending transactions, and managing EVM keys.
-- **Job Router**: Maps job IDs to handlers reacting to EVM events.
-- **Contexts**: Usually contain RPC clients, wallets, aggregator clients, BLS keys, and task managers.
-
----
+- **PollingProducer**: Streams logs using `eth_getLogs` from an EVM endpoint
+- **Alloy**: Re-exported via `blueprint_sdk::alloy` for decoding events, sending transactions, and managing EVM keys
+- **Job Router**: Maps job IDs to handlers reacting to EVM events
+- **BlueprintRunner**: Core executor that configures producer, consumer, router, and context
+- **Context**: Contains RPC clients, wallets, aggregator clients, BLS keys, and task managers
 
 ## 2. Project Skeleton
 
@@ -18,24 +17,28 @@ Key components:
 async fn main() -> Result<(), blueprint_sdk::Error> {
     let env = BlueprintEnvironment::load()?;
 
-    let signer = AGGREGATOR_PRIVATE_KEY.parse()?;
+    // Set up the wallet and provider
+    let signer = PRIVATE_KEY.parse()?;
     let wallet = EthereumWallet::from(signer);
     let provider = get_wallet_provider_http(&env.http_rpc_endpoint, wallet.clone());
 
+    // Set up the context with necessary components
     let context = CombinedContext::new(
-        EigenSquareContext { client: ..., std_config: env.clone() },
+        ClientContext { client: ..., env: env.clone() },
         Some(AggregatorContext::new(...).await?),
         env.clone(),
     );
 
+    // Create a producer to poll for events
     let task_producer = PollingProducer::new(
         Arc::new(provider),
         PollingConfig::default().poll_interval(Duration::from_secs(1)),
     ).await?;
 
+    // Set up the blueprint runner
     BlueprintRunner::builder(EigenlayerBLSConfig::new(...), env)
         .router(Router::new()
-            .route(XSQUARE_JOB_ID, xsquare_eigen)
+            .route(TASK_JOB_ID, task_handler)
             .route(INITIALIZE_TASK_JOB_ID, initialize_bls_task)
             .with_context(context))
         .producer(task_producer)
@@ -45,14 +48,12 @@ async fn main() -> Result<(), blueprint_sdk::Error> {
 }
 ```
 
----
-
 ## 3. Jobs and Event Decoding
 
-Handlers receive EVM logs as `BlockEvents`, use Alloy to decode them:
+Handlers receive EVM logs as `BlockEvents` and use Alloy to decode them:
 
 ```rust
-pub async fn xsquare_eigen(
+pub async fn task_handler(
     Context(ctx): Context<CombinedContext>,
     BlockEvents(events): BlockEvents,
 ) -> Result<(), TaskError> {
@@ -60,97 +61,91 @@ pub async fn xsquare_eigen(
         NewTaskCreated::decode_log(&log.inner, true).ok().map(|e| e.data)
     });
 
-    for task in task_events { ... }
+    for task in task_events {
+        // Process each task
+    }
     Ok(())
 }
 ```
 
-### Event Source Type:
+### Contract/Event Binding
+Use the `sol!` macro for binding contract ABIs:
+
 ```rust
 sol!(
-    #[derive(Debug)]
-    NewTaskCreated,
+    #[allow(missing_docs, clippy::too_many_arguments)]
+    #[sol(rpc)]
+    #[derive(Debug, Serialize, Deserialize)]
+    TaskManager,
     "contracts/out/TaskManager.sol/TaskManager.json"
 );
 ```
-Use `#[sol(rpc)]` for binding contract ABI to log/event decoding or contract calls.
-
----
 
 ## 4. Contexts in Eigenlayer
-Common context components:
-- Aggregator gRPC client
-- Keystore (for BLS key extraction)
-- Wallet (EVM private key)
-- Task manager address
+Contexts should include components specific to Eigenlayer operations:
 
 ```rust
-#[derive(Clone)]
+#[derive(Clone, KeystoreContext)]
 pub struct CombinedContext {
-    pub eigen_context: EigenSquareContext,
+    pub client_context: ClientContext,
     pub aggregator_context: Option<AggregatorContext>,
     pub env: BlueprintEnvironment,
 }
 ```
 
-You must wrap clients and keys in the context to make them accessible in jobs.
-
----
+Common context components:
+- Inner Contexts, if you have multiple - we can only have one main context used with the Runner (e.g. client, aggregator)
+- Keystore (for BLS key extraction)
+- Wallet/Signer (EVM private key)
+- Task manager address
 
 ## 5. BLS Signing
-Use `ctx.keystore().first_local::<ArkBlsBn254>()?` to load your operator key.
-Then use `eigensdk::crypto_bls::BlsKeyPair` to produce BLS signatures.
+Eigenlayer Blueprints use BLS signatures for aggregating operator responses:
 
 ```rust
+// Load operator key
+let pubkey = ctx.keystore().first_local::<ArkBlsBn254>()?;
+let secret = ctx.keystore().expose_bls_bn254_secret(&pubkey)?.unwrap();
+
+// Create a keypair and sign
 let key = BlsKeyPair::new(secret.to_string())?;
 let sig = key.sign_message(keccak256(...));
 ```
-Use `operator_id_from_g1_pub_key(...)` to generate your operator ID from the public key.
 
----
+Use `operator_id_from_g1_pub_key(...)` to generate operator ID from public key.
 
-## 6. Job Naming & Convention
-- Job IDs are `u32` constants: `pub const XSQUARE_JOB_ID: u32 = 0;`
-- Use `#[debug_job]` for logging execution context.
-- Name jobs based on the domain: `initialize_bls_task`, `xsquare_eigen`, etc.
-
----
+## 6. Job Naming & Structure
+- Job IDs are `u32` constants: `pub const TASK_JOB_ID: u32 = 0;`
+- Use `#[debug_job]` for logging execution context
+- Name handlers based on the domain: `initialize_bls_task`, `process_task_event`
+- Group related jobs in modules under `src/jobs/`
 
 ## 7. Testing: Anvil + Harness
-Enable the `testing` feature in SDK to use in-process `anvil` EVM testnets:
+Enable the `testing` feature in SDK to use in-process Anvil EVM testnets:
 
 ```rust
-let (testnet1, testnet2) = spinup_anvil_testnets().await?;
-
+// Set up test environment
+let (testnet, _) = spinup_anvil_testnets().await?;
 let tempdir = setup_temp_dir(...)?;
 let harness = TangleTestHarness::setup(tempdir).await?;
-```
 
-Run full end-to-end jobs via the Blueprint API and dispatch messages using Alloy:
-
-```rust
+// Deploy contracts and send transactions
 let tx = mailbox.dispatch_2(31338, recipient, Bytes::from("Hello"))
     .send().await?;
-```
 
-Then validate EVM events using `watch_logs()`:
-
-```rust
+// Watch for events and validate
+let filter = Filter::new().address(vec![contract_address]);
 let stream = provider.watch_logs(&filter).await?.into_stream();
 ```
 
----
-
-## 8. Do’s and Don’ts
-✅ DO:
-- Use `PollingProducer` for all EVM-based jobs.
-- Use Alloy’s `sol!` macro for ABI + log decoding.
-- Derive all routing context traits.
-- Use BLS keys and aggregator gRPC clients from SDK.
-
-❌ DON'T:
-- Never use `TangleProducer` or `TangleConsumer` in Eigenlayer blueprints.
-- Avoid manually decoding raw event data—use Alloy decode_log helpers.
-- Avoid re-implementing BLS or crypto logic—use the SDK-provided abstractions.
-
----
+## 8. Key Implementation Rules
+- MUST use `PollingProducer` for all EVM-based jobs
+- MUST use Alloy's `sol!` macro for ABI + log decoding
+- MUST derive `KeystoreContext` trait
+- MUST use BLS keys for operator signatures
+- MUST validate event signatures and message sources
+- DO NOT use `TangleProducer` or `TangleConsumer` in Eigenlayer blueprints
+- DO NOT manually decode event data—use Alloy decode_log helpers
+- DO NOT re-implement BLS or crypto logic—use SDK abstractions
+- MUST handle errors gracefully using proper error types
+- MUST properly clean up resources created during operation

@@ -203,33 +203,65 @@ let bls = BlsKeyPair::new(secret.to_string())?;
 
 ---
 
-## 7. Naming & Organization
-- Job IDs are declared as `pub const JOB_NAME_ID: u64 = 0;`
-- Handlers should be snake_case with suffixes (`_eigen`, `_local`, `_cron`, etc.)
-- Contexts use `PascalCaseContext` naming (e.g., `AggregatorContext`)
-- Group jobs into modules/files like `jobs/mod.rs`, `jobs/indexer.rs`, `jobs/config.rs`
+## 7. Key Architectural Concepts
 
-Use `#[debug_job]` macro to log entry and exit automatically.
+### Modularity
+- Blueprint services follow a strict separation between binary and library crates
+- Binary crate handles only initialization of the runner
+- Library crate contains all business logic, jobs, context, and utilities
+- Code is organized into logical modules (jobs, context, utils, etc.)
 
----
+### Microservice Pattern
+- Each Blueprint is a self-contained service triggered by on-chain events (jobs)
+- Each job has a clear, focused responsibility
+- Service state is properly isolated and managed via the Context
 
-## 8. Testing Conventions
-Use `TangleTestHarness` or `Anvil` + Alloy to simulate:
-- Service creation (`setup_services::<N>()`)
-- Job submission (`submit_job(...)`)
-- Execution polling (`wait_for_job_execution(...)`)
-- Result validation (`verify_job(...)`)
+### Producer/Consumer Flow
+```
+Producer → Router → Job Handlers → Consumer
+(Events)   (Routes)  (Logic)      (Results)
+```
 
-For Eigenlayer:
-- Use `cast` CLI or Anvil state
-- Watch logs via Alloy `watch_logs`
-- Load contracts with `sol!` macro bindings
+### State Management
+- Context struct manages shared state and clients 
+- Service-specific state is persisted in data_dir or database
+- Dynamic, per-job state should not be stored in main Context
 
----
+## 8. Common Pitfalls to Avoid
 
-## 9. Don'ts
-❌ Never use a `TangleConsumer`, `TangleProducer` outside of a Tangle specific blueprint.
+| ❌ Don't | ✅ Do Instead |
+|---------|-------------|
+| Put logic in `bin` crate | Keep all app logic in the `lib` crate |
+| Ignore errors from SDK | Propagate errors using `?` and handle appropriately |
+| Create new Docker clients per operation | Initialize once in `Context::new` and share via `Arc<Docker>` |
+| Rely on Docker defaults | Explicitly configure restart policies, resource limits, etc. |
+| Manually parse block data | Use `TangleArg`/`TangleArgsN` extractors |
+| Use blocking operations in async handlers | Use `tokio::spawn_blocking` or async APIs |
+| Create naming collisions with Job IDs | Ensure Job ID constants are unique and descriptive |
+| Use incorrect Producer/Consumer pairs | Match Producer/Consumer to event source and target chain |
 
+## 9. Development Process
+
+1. **Understand Requirements:**
+   - Review available documentation for current goals and status
+
+2. **Structure:**
+   - Adhere to folder architecture guidelines for organizing files
+   - Follow the bin/lib crate separation
+
+3. **Implementation:**
+   - Write code following coding standards and best practices
+   - Implement required integrations using appropriate patterns
+   - Configure proper state management and context
+
+4. **Testing:**
+   - Add integration tests for all jobs
+   - Test all interactions thoroughly
+   - Verify error handling and edge cases
+
+5. **Documentation:**
+   - Update `README.md` with clear usage instructions
+   - Document significant architectural decisions
 
 ---
 
