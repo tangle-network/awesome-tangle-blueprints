@@ -139,7 +139,7 @@ Your producer and consumer determine event ingestion and message submission:
 | `TangleConsumer` | Submits signed jobs to Tangle  | Only for Tangle chains |
 | `EVMConsumer`    | Sends txs via Alloy wallet     | Valid in Tangle configs |
 
-🧠 **Important:** A Blueprint using `TangleConfig` may use EVM producers + consumers. The config determines *where results are sent*, not *where events come from*.
+**Important:** A Blueprint using `TangleConfig` may use EVM producers + consumers. The config determines *where results are sent*, not *where events come from*.
 
 ---
 
@@ -234,7 +234,7 @@ Producer → Router → Job Handlers → Consumer
 
 ## 8. Common Pitfalls to Avoid
 
-| ❌ Don't | ✅ Do Instead |
+| Don't | Do Instead |
 |---------|-------------|
 | Put logic in `bin` crate | Keep all app logic in the `lib` crate |
 | Ignore errors from SDK | Propagate errors using `?` and handle appropriately |
@@ -328,21 +328,14 @@ This section consolidates all enforcement rules across Blueprint development dom
 ### Context and State Management
 - **MUST** include `#[config] pub env: BlueprintEnvironment` in Context
 - **MUST** derive `Clone` and necessary SDK context traits
-- **MUST** implement an `async fn new(...) -> Result<Self>` constructor
 - **MUST** initialize shared clients within the `new` function
-- **MUST** access context in handlers via the `Context<MyContext>` extractor
+- **MUST** access context in jobs via the `Context<MyContext>` extractor
 
 ### Job Handlers
-- **MUST** use `TangleArg`/`TangleArgsN` extractors for job inputs
-- **MUST** apply `TangleLayer` or other appropriate filters to job handlers
-- **MUST** return `TangleResult<T>` for jobs that need to report results
 - **MUST** handle errors gracefully using `Result`
 - **MUST NOT** manually decode block data; rely on extractors
 
 ### Producer/Consumer
-- **MUST** use `TangleProducer` and `TangleConsumer` for Tangle interaction
-- **MUST** use `TanglePairSigner` initialized from the environment keystore
-- **MUST NOT** use `TangleConsumer`, `TangleProducer` outside Tangle-specific blueprints
 - **MUST** match Producer/Consumer to event source and target chain
 
 ### Docker/Docktopus Integration
@@ -353,13 +346,6 @@ This section consolidates all enforcement rules across Blueprint development dom
 - **MUST** explicitly define necessary configurations
 - **MUST NOT** rely on implicit Docker defaults
 - **MUST NOT** ignore errors from `docktopus` operations
-
-### Testing
-- **MUST** include integration tests for all job handlers
-- **MUST** use `TangleTestHarness` for Tangle Blueprints
-- **MUST** follow the setup → register → execute → verify pattern
-- **MUST** clean up resources created during tests
-- **MUST** verify both job results and any significant side effects
 
 ### Error Handling
 - **MUST** propagate errors using `Result<T, E>` and `?` operator

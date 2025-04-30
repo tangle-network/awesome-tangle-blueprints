@@ -4,7 +4,7 @@ This document describes how to use `CronJob` from the Blueprint SDK to run sched
 
 CronJobs generate `JobCall`s at a fixed time interval using cron expressions **that include seconds**. **Note that this differs from standard cron expressions.**
 
-> ⚠️ **Important**: When using `CronJob`, ensure that the `cronjob` feature is explicitly enabled for the `blueprint-sdk` dependency in your project's `Cargo.toml`:
+> **Important**: When using `CronJob`, ensure that the `cronjob` feature is explicitly enabled for the `blueprint-sdk` dependency in your project's `Cargo.toml`:
 > ```toml
 > blueprint-sdk = { version = "x.y.z", features = ["cronjob"] }
 > ```
@@ -26,7 +26,7 @@ let mut cron = CronJob::new(MY_JOB_ID, "*/5 * * * * *").await?;
 
 ## 2. Cron Schedule Format
 
-✅ Format: `sec min hour day month day-of-week`
+Format: `sec min hour day month day-of-week`
 - Example: `"*/10 * * * * *"` → every 10 seconds
 
 **Note**: Blueprint SDK cron expressions **require seconds to be included**. Standard 5-field cron formats (without seconds) will not work correctly.
@@ -114,12 +114,12 @@ assert!(after.duration_since(before) >= Duration::from_secs(2));
 
 ## 8. Best Practices
 
-✅ Use cron when:
+Use cron when:
 - Jobs need to run at regular intervals
 - Input arguments are static or unnecessary
 - Jobs only depend on context and never external or dynamic parameters
 
-❌ **Don’t use cron when:**
+**Don’t use cron when:**
 - Input parameters are dynamic or user-driven
 - External parameters outside context are required
 - You expect reactive behavior (use Tangle or EVM events instead)

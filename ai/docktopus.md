@@ -34,7 +34,7 @@ Containers should follow a predictable lifecycle:
 
 - **Initialization → Create → Start → (optional monitoring or waiting) → Stop → Remove**
 
-### ✅ Correct Lifecycle Example:
+### Correct Lifecycle Example:
 ```rust
 let mut container = Container::new(client, "my/image")
     .cmd(["run-service"])
@@ -47,7 +47,7 @@ container.stop().await?;
 container.remove(None).await?;
 ```
 
-### ❌ Common Mistakes:
+### Common Mistakes:
 - Do **not** skip `.create()` if you plan to manually control startup.
 - Do **not** call `.remove()` without first stopping or providing `force`.
 
