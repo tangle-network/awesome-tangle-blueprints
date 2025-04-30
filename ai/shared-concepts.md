@@ -70,9 +70,9 @@ pub struct MyContext {
 **Required Traits:**
 - `#[derive(Clone)]` - Contexts must be cloneable for job handlers - this is always required
 - Chain-specific traits as needed:
-  - `TangleClientContext` - For Tangle chain interactions - this should always be used for Tangle Blueprints
-  - `ServicesContext` - For service registry access - this should always be used for all Blueprints
-  - `KeystoreContext` - For direct keystore access - this should always be used for all Blueprints
+  - `TangleClientContext` - For Tangle chain interactions
+  - `ServicesContext` - For service registry access
+  - `KeystoreContext` - For direct keystore access
 
 ### Initialization & Usage
 Initialization must be async and handle errors appropriately:
@@ -119,7 +119,6 @@ pub async fn my_handler(
 - Use Context for sharing clients and long-lived state across handlers
 - For service-specific persistent state, prefer:
   - Files in service-specific directories: `ctx.data_dir.join("service_id")`
-  - Database storage keyed by service ID
 - Avoid storing highly dynamic, per-job state directly in Context
 - Wrap shared clients in `Arc` for thread-safe access
 
@@ -150,7 +149,7 @@ Your producer and consumer determine event ingestion and message submission:
 Job handlers use extractors for context and argument handling:
 
 ```rust
-#[debug_job]  // Automatic entry/exit logging
+#[debug_job]
 pub async fn handler_name(
     Context(ctx): Context<MyContext>,
     TangleArg(data): TangleArg<String>,
@@ -162,11 +161,17 @@ pub async fn handler_name(
 
 **Key Components:**
 - **Extractors:** Use these to handle inputs automatically:
+
+  General extractors:
   - `Context<MyContext>`: Injects the context
+
+  Tangle-specific extractors:
   - `TangleArg<T>`: Single field argument
-  - `TangleArgs2<A, B>`, `TangleArgs3<A, B, C>`: Multiple fields
+  - `TangleArgs2<A, B>`, `TangleArgs3<A, B, C>`: Multiple fields up to 15 arguments at TangleArgs15<..>
   - `Optional<T>`: For optional arguments
   - `List<T>`: For array/list arguments
+  
+  EVM-specific extractors:
   - `BlockEvents`: For extracting EVM logs
 
 - **Return Types:**
@@ -235,7 +240,6 @@ Producer → Router → Job Handlers → Consumer
 | Ignore errors from SDK | Propagate errors using `?` and handle appropriately |
 | Create new Docker clients per operation | Initialize once in `Context::new` and share via `Arc<Docker>` |
 | Rely on Docker defaults | Explicitly configure restart policies, resource limits, etc. |
-| Manually parse block data | Use `TangleArg`/`TangleArgsN` extractors |
 | Use blocking operations in async handlers | Use `tokio::spawn_blocking` or async APIs |
 | Create naming collisions with Job IDs | Ensure Job ID constants are unique and descriptive |
 | Use incorrect Producer/Consumer pairs | Match Producer/Consumer to event source and target chain |
@@ -268,6 +272,8 @@ Producer → Router → Job Handlers → Consumer
 ## 10. Rust Coding Standards
 
 ### Error Handling
+Blueprint error types use `thiserror`- Errors in Blueprints must derive `thiserror::Error`.
+
 - Propagate errors using `Result<T, E>` and `?` operator
 - Avoid `unwrap()` or `expect()` in production code
 - Define custom error types implementing `std::error::Error` and `From` traits:
@@ -300,6 +306,8 @@ pub async fn handler_name(
 ### Strict Rules
 - **MUST** use Blueprint SDK patterns for runner, router, jobs, and context
 - **MUST NOT** use `TangleConsumer`/`TangleProducer` outside Tangle-specific blueprints
+- **MUST NOT** use `TangleArg`/`TangleArgsN` extractors outside Tangle blueprints
+- **MUST NOT** use `EVMConsumer`/`PollingProducer` outside EVM-specific blueprints
 - **MUST** handle errors gracefully using `Result`
 
 ---

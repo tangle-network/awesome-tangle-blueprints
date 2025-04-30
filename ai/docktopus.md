@@ -86,19 +86,19 @@ impl DockerContext {
 
 Regularly check container status via the provided `.status()` method, allowing your Blueprint to react to container state changes.
 
-### Status Check Example:
 ```rust
-match container.status().await? {
-    Some(status) if status.is_active() => {
-        // Container is running normally.
-    },
-    Some(status) if !status.is_usable() => {
-        // Container is in a problematic state; remove it forcefully.
-        container.remove(Some(RemoveContainerOptions { force: true, ..Default::default() })).await?;
-    },
-    _ => {
-        // Container status unknown or container not created yet.
-    },
+if let Some(status) = container.status().await? {
+    match status.health {
+        Some(ContainerStatus::Running) => { },
+        Some(ContainerStatus::Created) => { },
+        Some(ContainerStatus::Paused) => { },
+        Some(ContainerStatus::Exited) => { },
+        Some(ContainerStatus::Removing) => { },
+        Some(ContainerStatus::Restarting) => { },
+        Some(ContainerStatus::Dead) => { },
+        None => { },
+        _ => { }
+    }
 }
 ```
 
@@ -248,44 +248,7 @@ Refer to `memory-bank/systemPatterns.md` for specific tier definitions (Small, M
 
 ---
 
-## 11. Health Check Integration
-
-For production containers, utilize Docker's built-in health checks to monitor container health:
-
-```rust
-let container = Container::new(docker_client, "image/name:tag")
-    .health_check(HealthCheck {
-        test: Some(vec!["CMD", "curl", "-f", "http://localhost:8080/health"]),
-        interval: Some(30 * 1000000000), // 30 seconds in nanoseconds
-        timeout: Some(5 * 1000000000),   // 5 seconds in nanoseconds
-        retries: Some(3),
-        start_period: Some(10 * 1000000000), // 10 seconds before starting checks
-        ..Default::default()
-    });
-```
-
-When monitoring containers, incorporate health check status into your logic:
-
-```rust
-if let Some(status) = container.status().await? {
-    match status.health {
-        Some(health) if health == "healthy" => {
-            // Container is running and healthy
-        },
-        Some(health) if health == "unhealthy" => {
-            // Container is running but failing health checks
-            // Consider restarting or replacing
-        },
-        _ => {
-            // Other states (starting, no health check, etc.)
-        }
-    }
-}
-```
-
----
-
-## 12. Recommended Blueprint Context Integration
+## 11. Recommended Blueprint Context Integration
 
 Integrate Docker containers directly into your Blueprint's context struct, allowing your jobs to manage containers seamlessly.
 
@@ -320,7 +283,7 @@ This setup allows your Blueprint handlers and jobs to manage Docker containers v
 
 ---
 
-## 13. Enforcement Rules
+## 12. Enforcement Rules
 
 - **MUST** use the fluent builder pattern for container creation.
 - **MUST** follow the correct container lifecycle (Create → Start → Stop → Remove).

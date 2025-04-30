@@ -133,16 +133,6 @@ use blueprint_sdk::networking::participant::ParticipantInfo;
 use blueprint_sdk::contexts::networking::NetworkingContext;
 ```
 
-## Round-based Protocol (Feature: "round-based-compat")
-
-Components for round-based protocols (requires "networking" feature):
-
-```rust
-// Round-based components
-use blueprint_sdk::networking::round_based_compat::adapter::RoundBasedAdapter;
-use blueprint_sdk::networking::round_based_compat::producer::RoundBasedProducer;
-```
-
 ## Cron Jobs (Feature: "cronjob")
 
 Components for scheduled tasks:
@@ -158,8 +148,7 @@ Components for local key-value storage:
 
 ```rust
 // Storage components
-use blueprint_sdk::stores::Store;
-use blueprint_sdk::stores::local::LocalStore;
+use blueprint_sdk::stores::local::LocalDatabase;
 ```
 
 ## Macro Support (Feature: "macros")
@@ -276,7 +265,7 @@ This table shows which features you need to enable in your Cargo.toml for specif
 | EVM support | "evm" |
 | Eigenlayer support | "eigenlayer" (also enables "evm") |
 | P2P Networking | "networking" |
-| Round-based protocols | "round-based-compat" (also needs "networking") |
+| Round-based protocols | "round-based-compat" (implicitly enables "networking") |
 | Cron jobs | "cronjob" |
 | Local storage | "local-store" |
 | Macros and derive | "macros" |
