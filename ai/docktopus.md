@@ -34,7 +34,7 @@ Containers should follow a predictable lifecycle:
 
 - **Initialization → Create → Start → (optional monitoring or waiting) → Stop → Remove**
 
-### ✅ Correct Lifecycle Example:
+### Correct Lifecycle Example:
 ```rust
 let mut container = Container::new(client, "my/image")
     .cmd(["run-service"])
@@ -47,7 +47,7 @@ container.stop().await?;
 container.remove(None).await?;
 ```
 
-### ❌ Common Mistakes:
+### Common Mistakes:
 - Do **not** skip `.create()` if you plan to manually control startup.
 - Do **not** call `.remove()` without first stopping or providing `force`.
 
@@ -86,19 +86,19 @@ impl DockerContext {
 
 Regularly check container status via the provided `.status()` method, allowing your Blueprint to react to container state changes.
 
-### Status Check Example:
 ```rust
-match container.status().await? {
-    Some(status) if status.is_active() => {
-        // Container is running normally.
-    },
-    Some(status) if !status.is_usable() => {
-        // Container is in a problematic state; remove it forcefully.
-        container.remove(Some(RemoveContainerOptions { force: true, ..Default::default() })).await?;
-    },
-    _ => {
-        // Container status unknown or container not created yet.
-    },
+if let Some(status) = container.status().await? {
+    match status.health {
+        Some(ContainerStatus::Running) => { },
+        Some(ContainerStatus::Created) => { },
+        Some(ContainerStatus::Paused) => { },
+        Some(ContainerStatus::Exited) => { },
+        Some(ContainerStatus::Removing) => { },
+        Some(ContainerStatus::Restarting) => { },
+        Some(ContainerStatus::Dead) => { },
+        None => { },
+        _ => { }
+    }
 }
 ```
 
@@ -228,7 +228,27 @@ This test:
 
 ---
 
-## 10. Recommended Blueprint Context Integration
+## 10. Resource Management (Tiers)
+
+When implementing resource tiers (Small, Medium, Large) for containerized services, configure CPU, memory, and storage limits during container creation using appropriate options:
+
+```rust
+let container = Container::new(docker_client, "image/name:tag")
+    .host_config(HostConfig {
+        memory: Some(512 * 1024 * 1024), // 512MB memory limit
+        memory_swap: Some(1024 * 1024 * 1024), // 1GB swap limit
+        cpu_shares: Some(512), // CPU shares (relative weight)
+        cpu_period: Some(100000),
+        cpu_quota: Some(50000), // 50% CPU limit
+        ...Default::default()
+    });
+```
+
+Refer to `memory-bank/systemPatterns.md` for specific tier definitions (Small, Medium, Large) and their corresponding resource allocations.
+
+---
+
+## 11. Recommended Blueprint Context Integration
 
 Integrate Docker containers directly into your Blueprint's context struct, allowing your jobs to manage containers seamlessly.
 
@@ -263,16 +283,18 @@ This setup allows your Blueprint handlers and jobs to manage Docker containers v
 
 ---
 
-## 11. Don'ts ❌
+## 12. Enforcement Rules
 
-- **Do NOT instantiate a new Docker client for each container.**  
-  Always share via `Arc<Docker>`.
-
-- **Do NOT silently ignore errors.**  
-  Propagate errors clearly.
-
-- **Do NOT rely on implicit Docker behavior.**  
-  Specify all critical container options explicitly.
+- **MUST** use the fluent builder pattern for container creation.
+- **MUST** follow the correct container lifecycle (Create → Start → Stop → Remove).
+- **MUST** integrate container management within the Blueprint `Context`.
+- **MUST** share the `Arc<Docker>` client across the application.
+- **MUST** explicitly define necessary configurations (ports, volumes, restart policies).
+- **DO NOT** rely on implicit Docker defaults for critical settings.
+- **DO NOT** ignore errors from `docktopus` operations.
+- **DO NOT** instantiate a new Docker client for each container.
+- **DO NOT** skip creating containers before attempting to start them.
+- **DO NOT** call `.remove()` without first stopping or providing `force: true`.
 
 ---
 

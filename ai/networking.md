@@ -48,7 +48,7 @@ pub async fn new(config: BlueprintEnvironment) -> Result<Self> {
 
 ## 3. Computing Allowed Keys
 
-### ✅ From Tangle
+### From Tangle
 ```rust
 let operators = config.tangle_client().await?.get_operators().await?;
 let allowed_keys = AllowedKeys::InstancePublicKeys(
@@ -56,7 +56,7 @@ let allowed_keys = AllowedKeys::InstancePublicKeys(
 );
 ```
 
-### ✅ From Eigenlayer AVS
+### From Eigenlayer AVS
 ```rust
 let client = EigenlayerClient::new(config.clone());
 let (addrs, pubkeys) = client
@@ -112,12 +112,12 @@ Use `bincode` or similar for message serialization.
 
 ## 6. Best Practices
 
-✅ DO:
+DO:
 - Use context-level networking — never instantiate inside jobs
 - Set unique protocol ID per service (`/app/version/...`)
 - Use canonical serialization formats
 
-❌ DON’T:
+DON’T:
 - Use test keys or unverified peer identities in production
 - Recreate the network multiple times per job instance
 
