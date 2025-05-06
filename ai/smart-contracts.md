@@ -21,9 +21,10 @@ contracts/
 ```
 
 ## 3. Configuration Files
-Every Blueprint with contracts must include:
+Every Blueprint must include:
 
-### foundry.toml
+### foundry.toml (at project root)
+The `foundry.toml` in the project root configures contract compilation.
 
 #### Tangle Blueprints
 ```toml

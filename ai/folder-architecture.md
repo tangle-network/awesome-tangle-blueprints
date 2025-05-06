@@ -14,8 +14,9 @@ Every Blueprint must follow this layout exactly at the root level:
 ├── .github/
 ├── contracts/                 # Solidity contracts used for job triggers or verification
 ├── {{name}}-bin/              # Binary crate, entry point for blueprint execution
+│   ├── build.rs              # Build script for smart contracts and blueprint metadata
 │   └── src/
-│       └── main.rs
+│       └── main.rs           # Runner initialization
 ├── {{name}}-lib/              # Library crate, contains logic, jobs, context, tests
 │   ├── src/
 │   │   └── lib.rs
@@ -25,7 +26,9 @@ Every Blueprint must follow this layout exactly at the root level:
 ├── .gitignore
 ├── Cargo.lock
 ├── Cargo.toml
-├── Dockerfile                 # Optional runtime container setup
+├── foundry.toml              # Foundry config for contracts
+├── remappings.txt            # Solidity import remappings
+├── Dockerfile                # Optional runtime container setup
 ├── LICENSE-APACHE
 ├── LICENSE-MIT
 └── README.md
@@ -44,8 +47,8 @@ Every Blueprint must follow this layout exactly at the root level:
 ### 2. Crate Responsibilities
 
 #### {{name}}-bin/
-- Initializes the Blueprint environment and runner.
-- Registers producers, consumers, router, and context.
+- Initializes the Blueprint environment and runner (where producers, consumers, routers, and contexts are defined and passed to the BlueprintRunner).
+- Contains `build.rs` script for contract compilation and `blueprint.json` generation.
 - No application logic allowed.
 
 #### {{name}}-lib/

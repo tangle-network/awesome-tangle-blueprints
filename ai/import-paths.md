@@ -1,6 +1,6 @@
 # Cursor Rules: Blueprint SDK Import Paths
 
-This document provides a comprehensive reference for importing components from the Blueprint SDK, organized by feature categories. Each section lists the available import paths and the feature flag required to enable them.
+This document provides a comprehensive reference for importing components from the Blueprint SDK, organized by feature categories. Each section lists the available import paths and the feature flag required to enable them. Be sure to pay attention to what blueprint-sdk features are required for each import.
 
 ## Core Components (Always Available)
 
@@ -23,7 +23,7 @@ use blueprint_sdk::error::RunnerError;
 use blueprint_sdk::contexts::keystore::KeystoreContext;
 
 // Core types for job definitions
-use blueprint_sdk::Job;
+use blueprint_sdk::Job; // This should be imported in main.rs to get access to the layer method on jobs
 use blueprint_sdk::BackgroundService;
 ```
 
@@ -63,7 +63,7 @@ use blueprint_sdk::crypto::tangle_pair_signer::TanglePairSigner;
 // Tangle Job Input Extraction
 use blueprint_sdk::tangle::extract::TangleArg;
 use blueprint_sdk::tangle::extract::TangleArgs2;
-use blueprint_sdk::tangle::extract::TangleArgs3;
+use blueprint_sdk::tangle::extract::TangleArgs3; // TangleArgsN up to N = 16 is supported
 use blueprint_sdk::tangle::extract::Optional;
 use blueprint_sdk::tangle::extract::List;
 
@@ -188,6 +188,7 @@ use blueprint_sdk::testing::chain_setup::TangleTestHarness;
 use blueprint_sdk::testing::chain_setup::spinup_anvil_testnets;
 
 // Temporary files
+use blueprint_sdk::testing::tempfile;
 use blueprint_sdk::testing::tempfile::TempDir;
 ```
 
