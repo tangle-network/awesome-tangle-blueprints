@@ -2,77 +2,119 @@
   <img src="https://raw.githubusercontent.com/tangle-network/tangle/main/assets/Tangle%20%20Banner.png" alt="Tangle Network Banner" width="100%" />
 </div>
 
-# Awesome Tangle Blueprints 🌟
+# Awesome Tangle Blueprints
 
-A comprehensive collection of Tangle Blueprints, examples, and resources for developing on the Tangle Network.
+The canonical catalog of [Tangle Blueprints](https://docs.tangle.tools/developers/blueprints/introduction) — executable service templates that operators run on Tangle Network for fees. Built with [Blueprint SDK](https://github.com/tangle-network/blueprint).
 
-## Table of Contents
-- [Awesome Tangle Blueprints 🌟](#awesome-tangle-blueprints-)
-  - [Table of Contents](#table-of-contents)
-  - [What are Tangle Blueprints?](#what-are-tangle-blueprints)
-  - [Bridges](#bridges)
-  - [AI](#ai)
-  - [MPC](#mpc)
-  - [Distributed Validators](#distributed-validators)
-  - [Web Services](#web-services)
-  - [Rollups](#rollups)
-  - [Eigenlayer](#eigenlayer)
-  - [Symbiotic](#symbiotic)
-  - [Using Other Programming Languages](#using-other-programming-languages)
-  - [Contributing](#contributing)
+## AI Inference
 
-## What are Tangle Blueprints?
+Operators serve model inference across modalities. Callers pay via x402 HTTP (fast, private) or on-chain jobs (verifiable).
 
-Tangle Blueprints represent a standardized framework for creating reproducible infrastructure services. These Blueprints encompass everything from fundamental primitives and templates to production-ready services and libraries. They provide developers with battle-tested patterns, architectural best practices, and ready-to-use components to accelerate application development on the Tangle Network.
+| Blueprint | Modality | Endpoint | SDK Status |
+|---|---|---|---|
+| [LLM Inference](https://github.com/tangle-network/llm-inference-blueprint) | Text LLM via vLLM | `/v1/chat/completions` | Current |
+| [Voice Inference](https://github.com/tangle-network/voice-inference-blueprint) | TTS via Qwen3-TTS / vLLM-Omni | `/v1/audio/speech` | Current |
+| [Video Generation](https://github.com/tangle-network/video-gen-inference-blueprint) | Video via ComfyUI / Modal / Replicate | `/v1/video/generate` | Current |
+| [Avatar Inference](https://github.com/tangle-network/avatar-inference-blueprint) | Talking-head (HeyGen / D-ID / ComfyUI) | `/v1/avatar/generate` | Current |
+| [Embedding](https://github.com/tangle-network/embedding-inference-blueprint) | Text embeddings via HuggingFace TEI | `/v1/embeddings` | Current |
+| [Vector Store](https://github.com/tangle-network/vector-store-blueprint) | Qdrant vector DB + similarity search | `/v1/collections/*` | Current |
+| [Training](https://github.com/tangle-network/training-blueprint) | Distributed training via DeMo (10,000x compression) | On-chain jobs | Current |
+| [Modal Inference](https://github.com/tangle-network/modal-inference-blueprint) | Modal-backed inference proxy | `/v1/chat/completions` | Current |
 
-For comprehensive documentation and detailed guides, visit our [official documentation](https://docs.tangle.tools/developers/blueprints/introduction).
+## AI Agents
+
+Operators host agent runtimes. Callers run AI workloads in isolated environments.
+
+| Blueprint | Description | SDK Status |
+|---|---|---|
+| [AI Agent Sandbox](https://github.com/tangle-network/ai-agent-sandbox-blueprint) | TEE Docker sandbox runtime (AWS Nitro / Azure / GCP / Phala) — 3 modes: Cloud, Instance, TEE Instance | Current |
+| [AI Trading](https://github.com/tangle-network/ai-trading-blueprint) | Autonomous trading with 2-of-3 validator committee, 8 DeFi protocols, ERC-7575 vaults | Current |
+| [Secure Code Execution](https://github.com/tangle-network/secure-code-execution-blueprint) | Sandboxed code execution service (Rust, Go, Python, JS/TS) | Current |
+| [Rig AI Agent](https://github.com/tangle-network/rig-ai-agent-blueprint) | Rig AI agent with GitHub spell-check/contribution actions | Legacy SDK |
+| [Coinbase Agent Kit](https://github.com/tangle-network/coinbase-agent-kit-blueprint) | Coinbase Agent Kit as an operator service | Legacy SDK |
+| [Discord Summarizer](https://github.com/tangle-network/discord-summarizer-rig-blueprint) | Discord channel AI summarization agent | Legacy SDK |
+| [Gaia AI Agent Template](https://github.com/tangle-network/gaia-ai-agent-template) | Template for AI agents using the Gaia framework | — |
+
+## MPC & Cryptographic Primitives
+
+Operators run threshold cryptography and multi-party computation services.
+
+| Blueprint | Primitive | SDK Status |
+|---|---|---|
+| [BLS](https://github.com/tangle-network/bls-blueprint) | Threshold BLS signatures (BLS381) | Current |
+| [FROST](https://github.com/tangle-network/frost-blueprint) | FROST Schnorr threshold signatures | Current |
+| [Schnorr Musig2](https://github.com/tangle-network/schnorr-musig2-blueprint) | Musig2 Schnorr signatures over Secp256k1 | Current |
+| [BTE](https://github.com/tangle-network/bte-blueprint) | Batch threshold decryption (MEV-resistant orderflow) | Legacy SDK |
+| [DFNS CGGMP21](https://github.com/tangle-network/dfns-cggmp21-blueprint) | CGGMP21 distributed key generation + signing | Legacy SDK |
+| [Silent Timelock Encryption](https://github.com/tangle-network/silent-timelock-encryption-blueprint) | Silent setup timelock encryption + threshold decryption | Legacy SDK |
+| [WSTS](https://github.com/tangle-network/wsts-blueprint) | Weighted Schnorr threshold signatures | Legacy SDK |
+| [CoSnarks zkSaaS](https://github.com/tangle-network/cosnarks-zksaas-blueprint) | Zero-knowledge proofs as a service | Legacy SDK |
 
 ## Bridges
-- [LayerZero DVN Blueprint Template](https://github.com/tangle-network/layerzero-dvn-blueprint-template) - Template for creating LayerZero DVN (Decentralized Verifier Network) blueprints
-- [Hyperlane Relayer Blueprint](https://github.com/tangle-network/hyperlane-relayer-blueprint) - Blueprint for implementing Hyperlane relayer functionality
-- [Hyperlane ISM Blueprint Template](https://github.com/tangle-network/hyperlane-ism-blueprint-template) - Template for creating Hyperlane Interchain Security Module blueprints
-- [Hyperbridge Relayer Blueprint](https://github.com/tangle-network/hyperbridge-relayer-blueprint) - Blueprint for implementing Hyperbridge relayer functionality
 
-## AI
-- [Rig AI Agent w/ Github spell-check/contribution actions](https://github.com/tangle-network/rig-ai-agent-blueprint) - A template showcasing Rig AI agent integration with Tangle Blueprints, which contains an example agent for spell checking and improving code documentation of requested repos.
-- [Gaia AI Agent Template](https://github.com/tangle-network/gaia-ai-agent-template) - Template for creating AI agents using the Gaia framework
-- [Discord AI Summary Agent](https://github.com/tangle-network/discord-summarizer-rig-blueprint/) - Template for creating AI agents that summarizes discord channels daily
-
-## Key Management
-- [Turnkey API Blueprint](https://github.com/tangle-network/turnkey-blueprint-template) - A template that contains Turnkey APIs for interacting with Turnkey for use in a Tangle blueprint.
-
-## MPC
-- [FROST Blueprint](https://github.com/tangle-network/frost-blueprint) - Blueprint for implementing FROST (Flexible Round-Optimized Schnorr Threshold) signatures
-- [DFNS CGGMP21 Blueprint](https://github.com/tangle-network/dfns-cggmp21-blueprint) - Blueprint for implementing DFNS CGGMP21 distributed key generation
-- [Schnorr Musig2](https://github.com/tangle-network/schnorr-musig2-blueprint) - Blueprint for Musig2 Schnorr signatures over Secp256k1
-- [Threshold BLS](https://github.com/tangle-network/bls-blueprint) - Blueprint for threshold BLS signatures using BLS381
-- [Silent Timelock Encryption](https://github.com/tangle-network/silent-timelock-encryption-blueprint) - Blueprint for silent setup timelock encryptions and threshold decryptions.
-- [Batch Threshold Decryption](https://github.com/tangle-network/bte-blueprint) - Blueprint for batch threshold decryption, includes examples for MEV-resistent orderflow. 
+| Blueprint | Description |
+|---|---|
+| [LayerZero DVN Template](https://github.com/tangle-network/layerzero-dvn-blueprint-template) | LayerZero Decentralized Verifier Network template |
+| [Hyperlane Relayer](https://github.com/tangle-network/hyperlane-relayer-blueprint) | Hyperlane relayer functionality |
+| [Hyperlane ISM Template](https://github.com/tangle-network/hyperlane-ism-blueprint-template) | Hyperlane Interchain Security Module template |
+| [Hyperbridge Relayer](https://github.com/tangle-network/hyperbridge-relayer-blueprint) | Hyperbridge relayer functionality |
 
 ## Distributed Validators
-- [Obol DVT Blueprint](https://github.com/tangle-network/obol-dvt-blueprint) - Blueprint for implementing Obol Distributed Validator Technology
+
+| Blueprint | Description |
+|---|---|
+| [Obol DVT](https://github.com/tangle-network/obol-dvt-blueprint) | Obol Distributed Validator Technology |
 
 ## Web Services
-- [Secure code execution as a service (Lambdas)](https://github.com/tangle-network/secure-code-execution-blueprint) - A template for code execution service supporting Rust, Golang, Python, JS/TS
-- [Account Abstraction / transaction relayer](https://github.com/tangle-network/txrelayer-blueprint) - Blueprint for feeless transaction relayers to support any EVM.
-- [TLS Notary Blueprint](https://github.com/tangle-network/tls-notary-blueprint) - Blueprint for implementing TLS notary services
-- [Apillon Simplet Blueprint Template](https://github.com/tangle-network/apillon-simplet-blueprint-template) - Template for creating Apillon Simplet web services
 
-## Rollups
-- [Espresso RaaS](https://github.com/tangle-network/espresso-raas-blueprint/) - Espresso RaaS w/ Arbitrum Orbit stack
-- [Avail Arbitrum Orbit RaaS](https://github.com/tangle-network/avail-arbitrum-orbit-raas) - Rollup-as-a-Service implementation for Arbitrum Orbit using Avail DA
-- [RaaS Blueprints](https://github.com/tangle-network/raas-blueprints) - Collection of Rollup-as-a-Service blueprints
+| Blueprint | Description |
+|---|---|
+| [TLS Notary](https://github.com/tangle-network/tls-notary-blueprint) | TLS notary services |
+| [TX Relayer](https://github.com/tangle-network/txrelayer-blueprint) | Feeless transaction relayer for any EVM (account abstraction) |
 
-## Eigenlayer
-- [Incredible Squaring Eigenlayer](https://github.com/tangle-network/gadget/tree/main/blueprints/incredible-squaring-eigenlayer) - Eigenlayer blueprint for incredible squaring implementation
-- [AVS](https://github.com/tangle-network/avs) - Tangle Operator AVS implementation for Eigenlayer
+## Restaking Integrations
 
-## Symbiotic
-- [Incredible Squaring Symbiotic](https://github.com/tangle-network/gadget/tree/main/blueprints/incredible-squaring-symbiotic) - Symbiotic blueprint for incredible squaring implementation
+| Blueprint | Description |
+|---|---|
+| [Incredible Squaring (EigenLayer)](https://github.com/tangle-network/gadget/tree/main/blueprints/incredible-squaring-eigenlayer) | EigenLayer example blueprint |
+| [AVS](https://github.com/tangle-network/avs) | Tangle Operator AVS implementation for EigenLayer |
+| [Incredible Squaring (Symbiotic)](https://github.com/tangle-network/gadget/tree/main/blueprints/incredible-squaring-symbiotic) | Symbiotic example blueprint |
 
-## Using Other Programming Languages
-- [TypeScript Blueprint Template](https://github.com/tangle-network/typescript-blueprint-template) - Template for creating Tangle blueprints using TypeScript
+## Templates & Tools
+
+| Resource | Description |
+|---|---|
+| [Blueprint SDK](https://github.com/tangle-network/blueprint) | The Rust authoring SDK for all Blueprints (`blueprint-sdk` on crates.io) |
+| [Blueprint Template](https://github.com/tangle-network/blueprint-template) | Starter template for new Blueprints |
+| [TypeScript Blueprint Template](https://github.com/tangle-network/typescript-blueprint-template) | Template for TypeScript-authored Blueprints |
+| [Turnkey API Template](https://github.com/tangle-network/turnkey-blueprint-template) | Template with Turnkey APIs for key management |
+
+## SDK Status
+
+All Blueprints are built with [Blueprint SDK](https://github.com/tangle-network/blueprint) (`blueprint-sdk` crate on crates.io).
+
+| Status | Meaning |
+|---|---|
+| **Current** | Uses `tangle-network/blueprint` (current SDK repo). Latest published: `0.2.0-alpha.2`. |
+| **Legacy SDK** | Uses `tangle-network/gadget` or `tangle-network/gadget-workspace` (predecessor repo). Upgrade to current SDK planned. |
+
+## What is a Tangle Blueprint?
+
+A Blueprint is a Rust service built on Blueprint SDK, paired with a Solidity **BSM** (Blueprint State Machine) contract. The BSM governs operator registration, pricing, slashing, and result verification. Operators register against the BSM, run the service, and earn fees through the [Tangle Protocol payment split](https://docs.tangle.tools):
+
+| Party | Share |
+|---|---|
+| Developer (Blueprint author) | 20% |
+| Protocol treasury | 20% |
+| Operators | 40% |
+| Stakers | 20% |
+
+Two payment rails per Blueprint:
+- **On-chain jobs** via TangleProducer — verifiable results on Tangle
+- **x402 HTTP** — fast, private, via the [Shielded Payment Gateway](https://github.com/tangle-network/shielded-payment-gateway)
+
+For documentation: [docs.tangle.tools/developers/blueprints/introduction](https://docs.tangle.tools/developers/blueprints/introduction)
 
 ## Contributing
 
-We welcome contributions! To submit your own Tangle Blueprint or resource, please create a pull request following our contribution guidelines.
+We welcome contributions. To add a Blueprint, open a PR with a link to the repo and a one-line description.
